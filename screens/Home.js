@@ -7,6 +7,7 @@ import CustomButtons from "../utils/CustomButton"
 export default function Home({navigation, route}) {
 
     const [name, setName] = useState('')
+    const [number, setNumber] = useState("")
 
     useEffect(()=>{
        getData()
@@ -15,10 +16,12 @@ export default function Home({navigation, route}) {
 //function to read the name thats stored in async storage
 const getData= ()=> {
     try {
-        AsyncStorage.getItem("userName")
+        AsyncStorage.getItem("userData")
         .then(value =>{
             if(value != null) {
-                setName(value)
+                let user= JSON.parse(value)
+                setName(user.Name)
+                setNumber(user.Number)
             }
         })
     } catch (error) {
@@ -31,7 +34,10 @@ const updateData= async()=>{
         Alert.alert("Warning!", "Input field cannot be empty")
     }else{
         try {
-            await AsyncStorage.setItem("userName", name)  
+            let user={
+                Name: name
+            }
+            await AsyncStorage.mergeItem("userData", JSON.stringify(user))  
             Alert.alert("Success!", "Your data has been updated")
             navigation.navigate("Home")
         } catch (error) {
@@ -53,6 +59,7 @@ const deleteData= async()=>{
   return (
     <View style={styles.body}>
       <Text style={styles.text}> Welcome Home {name}!</Text>
+      <Text style={styles.text}> and your number is {number}</Text>
 
       <TextInput 
         style={styles.input} 

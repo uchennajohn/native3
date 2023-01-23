@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, Text, Image, TextInput, Alert } from "react-native";
+import { View, StyleSheet, Text, Image, TextInput, Alert, AppRegistry } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomButtons from "../utils/CustomButton"
 
 function Login({navigation}) {
 
     const [name, setName] = useState("")
+    const [number, setNumber] = useState("")
 
     useEffect(()=>{
         getData()
@@ -14,7 +15,7 @@ function Login({navigation}) {
  //function to read the name thats stored in async storage
  const getData= ()=> {
      try {
-         AsyncStorage.getItem("userName")
+         AsyncStorage.getItem("userData")
          .then(value =>{
              if(value != null) {
                 navigation.navigate("Home")
@@ -29,11 +30,15 @@ function Login({navigation}) {
     
 
     const setData= async()=>{
-        if(name.length ===0) {
+        if(name.length ==0 || number.length==0) {
             Alert.alert("Warning!", "Input field cannot be empty")
         }else{
             try {
-                await AsyncStorage.setItem("userName", name)  
+                let user={
+                    Name: name,
+                    Number:number
+                }
+                await AsyncStorage.setItem("userData", JSON.stringify(user))  
                 navigation.navigate("Home")
             } catch (error) {
                 console.log(error)
@@ -51,6 +56,13 @@ function Login({navigation}) {
                       style={styles.input} 
                       placeholder="Enter your Name"
                       onChangeText={(value)=> setName(value)}
+                      />
+
+                    <TextInput 
+                      style={styles.input} 
+                      placeholder="Enter your number"
+                      keyboardType="numeric"
+                      onChangeText={(value)=> setNumber(value)}
                       />
 
                    <CustomButtons 
@@ -72,6 +84,7 @@ const styles = StyleSheet.create({
     image:{
        width: 100,
        height: 100,
+       margin: 20
       
        
     },

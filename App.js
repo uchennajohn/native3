@@ -3,8 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
-import Login from './screens/Login';
-import Home from './screens/Home';
+import Login from './src/screens/Login';
+import Home from './src/screens/Home';
+import { Provider} from "react-redux";
+import { Store } from './src/Redux/store';
+
 
 const Stack = createStackNavigator()
 
@@ -14,6 +17,7 @@ export default function App() {
 
 
   return (
+    <Provider store={Store}>
    <NavigationContainer>
     <Stack.Navigator
      initialRouteName="Login"
@@ -50,6 +54,7 @@ export default function App() {
 
 
    </NavigationContainer>
+   </Provider>
   );
 }
 

@@ -1,7 +1,9 @@
 import { Alert, StyleSheet, Text, View, TextInput } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
-import CustomButtons from "../utils/CustomButton"
+import CustomButtons from "../../utils/CustomButton"
+import {useSelector, useDispatch} from "react-redux";
+import { setName, setNumber } from "../Redux/actions";
 
 import SQLite from "react-native-sqlite-storage";
 
@@ -22,8 +24,11 @@ const db = SQLite.openDatabase(
 
 export default function Home({navigation, route}) {
 
-    const [name, setName] = useState('')
-    const [number, setNumber] = useState("")
+    const {name, number} = useSelector(state=>state.userReducer)
+    const dispatch= useDispatch()
+
+    // const [name, setName] = useState('')
+    // const [number, setNumber] = useState("")
 
     useEffect(()=>{
        getData()
@@ -51,8 +56,8 @@ const getData= ()=> {
                         console.log('succesfully  logged in')
                         let userName = result.rows.item(0).Name;
                         let userNumber = result.rows.item(0).Number
-                        setName(userName)
-                        setNumber(userNumber)
+                        dispatch(setName(name));
+                        dispatch(setNumber(number));
                     }
                 }
             )
@@ -117,7 +122,7 @@ const deleteData= async()=>{
       <TextInput 
         style={styles.input} 
         placeholder="Update your Name"
-        onChangeText={(value)=> setName(value)}
+        onChangeText={(value)=> dispatch(setName(value))}
         value={name}
         
         />

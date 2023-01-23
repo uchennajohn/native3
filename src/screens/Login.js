@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Image, TextInput, Alert, AppRegistry } from "react-native";
 //import AsyncStorage from "@react-native-async-storage/async-storage";
-import CustomButtons from "../utils/CustomButton"
+import CustomButtons from "../../utils/CustomButton"
 import SQLite from "react-native-sqlite-storage";
+import {useSelector, useDispatch} from "react-redux";
+import { setName, setNumber } from "../Redux/actions";
 
 
 
@@ -22,8 +24,14 @@ const db = SQLite.openDatabase(
 
 function Login({navigation}) {
 
-    const [name, setName] = useState("")
-    const [number, setNumber] = useState("")
+    const {name, number} = useSelector(state=>state.userReducer)
+    const dispatch= useDispatch()
+
+
+    //const [name, setName] = useState("")
+    //const [number, setNumber] = useState("")
+
+
 
     useEffect(()=>{
         createTable()
@@ -80,10 +88,12 @@ function Login({navigation}) {
             Alert.alert("Warning!", "Input field cannot be empty")
         }else{
             try {
-                let user={
-                    Name: name,
-                    Number:number
-                }
+                dispatch(setName(name));
+                dispatch(setNumber(number));
+            //     let user={
+            //         Name: name,
+            //         Number:number
+            //     }
                // await AsyncStorage.setItem("userData", JSON.stringify(user))  
               await db.transaction(async(tx)=>{
 
@@ -106,20 +116,20 @@ function Login({navigation}) {
         <View style={styles.body}>
             <Image 
                  style={styles.image} 
-                 source={require('../assets/logo-red.png')}/>
+                 source={require('../../assets/logo-red.png')}/>
                  <Text style={styles.text}>Async Storage</Text>
                  
                    <TextInput 
                       style={styles.input} 
                       placeholder="Enter your Name"
-                      onChangeText={(value)=> setName(value)}
+                      onChangeText={(value)=>dispatch(setName(name))}
                       />
 
                     <TextInput 
                       style={styles.input} 
                       placeholder="Enter your number"
                       keyboardType="numeric"
-                      onChangeText={(value)=> setNumber(value)}
+                      onChangeText={(value)=> dispatch(setNumber(number))}
                       />
 
                    <CustomButtons 

@@ -3,6 +3,22 @@ import React, { useEffect, useState } from 'react'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import CustomButtons from "../utils/CustomButton"
 
+import SQLite from "react-native-sqlite-storage";
+
+
+
+
+//open or create the SQlite database
+const db = SQLite.openDatabase(
+    {
+        name: "MainDb",
+        location: "default"
+    },
+    ()=> {
+        console.log("successfully connected to Database")
+    }, (error)=>{console.log(error) 
+    })
+
 
 export default function Home({navigation, route}) {
 
@@ -16,19 +32,37 @@ export default function Home({navigation, route}) {
 //function to read the name thats stored in async storage
 const getData= ()=> {
     try {
-        AsyncStorage.getItem("userData")
-        .then(value =>{
-            if(value != null) {
-                let user= JSON.parse(value)
-                setName(user.Name)
-                setNumber(user.Number)
-            }
+        // AsyncStorage.getItem("userData")
+        // .then(value =>{
+        //     if(value != null) {
+        //         let user= JSON.parse(value)
+        //         setName(user.Name)
+        //         setNumber(user.Number)
+        //     }
+        // })
+
+        db.transaction((tx)=>{
+            tx.executeSql(
+                "SELECT Name, Number FROM Users",
+                [],
+                (tx, result)=> {
+                    let len =result.rows.length
+                    if(len > 0) {
+                        console.log('succesfully  logged in')
+                        let userName = result.rows.item(0).Name;
+                        let userNumber = result.rows.item(0).Number
+                        setName(userName)
+                        setNumber(userNumber)
+                    }
+                }
+            )
         })
     } catch (error) {
        console.log(error) 
     }
 }
 
+//function to update data
 const updateData= async()=>{
     if(name.length ===0) {
         Alert.alert("Warning!", "Input field cannot be empty")
@@ -37,7 +71,18 @@ const updateData= async()=>{
             let user={
                 Name: name
             }
-            await AsyncStorage.mergeItem("userData", JSON.stringify(user))  
+          //  await AsyncStorage.mergeItem("userData", JSON.stringify(user))  
+          db.transaction((tx)=>{
+            tx.executeSql(
+                "UPDATE Users SET Name=?",
+                [name],
+                ()=>{
+                   Alert.alert("Success!", "Your data has been updated")
+                },
+                error =>{
+                    console.log(error)}
+            )
+          })
             Alert.alert("Success!", "Your data has been updated")
             navigation.navigate("Home")
         } catch (error) {
@@ -49,8 +94,16 @@ const updateData= async()=>{
 const deleteData= async()=>{
    
         try {
-            await AsyncStorage.removeItem("userName")  
-           navigation.navigate("Login")   
+          //  await AsyncStorage.removeItem("userName")  
+          db.transaction((tx)=>{
+            tx.executeSql(
+                "DELETE FROM Users",       //WHERE ID = 1 --- this can use to limit the  delete to a particular id/row
+                [],
+                ()=>{navigation.navigate("Login") },
+                error=>{console.log(error)}
+                )
+          })
+          // navigation.navigate("Login")   
         } catch (error) {
             console.log(error)
         }

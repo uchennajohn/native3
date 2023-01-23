@@ -1,7 +1,24 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Image, TextInput, Alert, AppRegistry } from "react-native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+//import AsyncStorage from "@react-native-async-storage/async-storage";
 import CustomButtons from "../utils/CustomButton"
+import SQLite from "react-native-sqlite-storage";
+
+
+
+
+//open or create the SQlite database
+const db = SQLite.openDatabase(
+    {
+        name: "MainDb",
+        location: "default"
+    },
+    ()=> {
+        console.log("successfully connected to Database")
+    }, (error)=>{console.log(error) 
+    })
+
+
 
 function Login({navigation}) {
 
@@ -9,18 +26,47 @@ function Login({navigation}) {
     const [number, setNumber] = useState("")
 
     useEffect(()=>{
+        createTable()
         getData()
      }, [])
+
+
+
+     //function to crete database table
+    const createTable=()=>{
+        db.transaction((tx)=> {
+            tx.executeSql(
+                'INSERT TABLE IF NOT EXIST '
+                + "Users "
+                +"(ID INTEGER PRIMARY KEY AUTOINCREMENT, Name TEXT, Number INTEGER)"
+            )
+        })
+    }
+
+
+
  
  //function to read the name thats stored in async storage
  const getData= ()=> {
      try {
-         AsyncStorage.getItem("userData")
-         .then(value =>{
-             if(value != null) {
-                navigation.navigate("Home")
-             }
-         })
+        //  AsyncStorage.getItem("userData")
+        //  .then(value =>{
+        //      if(value != null) {
+        //         navigation.navigate("Home")
+        //      }
+        //  })
+        db.transaction((tx)=>{
+            tx.executeSql(
+                "SELECT Name, Number FROM Users",
+                [],
+                (tx, result)=> {
+                    let len =result.rows.length
+                    if(len > 0) {
+                       navigation.navigate("Home")
+                    }
+                }
+            )
+        })
      } catch (error) {
         console.log(error) 
      }
@@ -38,7 +84,18 @@ function Login({navigation}) {
                     Name: name,
                     Number:number
                 }
-                await AsyncStorage.setItem("userData", JSON.stringify(user))  
+               // await AsyncStorage.setItem("userData", JSON.stringify(user))  
+              await db.transaction(async(tx)=>{
+
+                    // await  tx.executeSql(
+                    //         "INSERT INTO Users (Name, Number) VALUES (' " +name +" ' " + number + ")"
+                    //     )
+
+                    await tx.executeSql(
+                        'INSERT INTO Users (Name, Number) VALUES (?, ?',
+                        [name, number]
+                    )
+               })
                 navigation.navigate("Home")
             } catch (error) {
                 console.log(error)
